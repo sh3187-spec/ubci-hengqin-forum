@@ -1,15 +1,11 @@
 """
 超声脑机横琴论坛 · RSVP Web Application
-Flask app for Railway deployment
+Flask app for Railway deployment - Email via Resend API
 """
 import os
-import smtplib
-import ssl
 import json
 import logging
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.header import Header
+import requests
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -18,14 +14,9 @@ app = Flask(__name__, static_folder='.')
 CORS(app)
 logging.basicConfig(level=logging.INFO)
 
-SMTP_CONFIGS = [
-    {'host': 'smtp.exmail.qq.com', 'port': 465, 'ssl': True},
-    {'host': 'smtp.mxhichina.com', 'port': 465, 'ssl': True},
-    {'host': 'smtp.qiye.aliyun.com', 'port': 465, 'ssl': True},
-]
-
-SENDER_EMAIL    = os.environ.get('SMTP_USER', 'info@ultrasoundbci.org.cn')
-SENDER_PASS     = os.environ.get('SMTP_PASS', '8zqawu$7Fa@6yXjP')
+RESEND_API_KEY  = os.environ.get('RESEND_API_KEY', 're_jBTjDS1S_EVSFQHETxxtbw8rZMXoLn6Ak')
+SENDER_EMAIL    = 'info@ultrasoundbci.org.cn'
+SENDER_NAME     = '超声脑机横琴论坛'
 ORGANIZER_EMAIL = 'info@ultrasoundbci.org.cn'
 RSVP_FILE       = '/tmp/rsvp_records.json'
 
@@ -77,7 +68,9 @@ body{{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f4f6f9;
 def build_notify_email(name, title, institution, role, email, abstract):
     role_map = {'oral': '口头报告', 'poster': '海报展示', 'attendee': '仅参会'}
     role_cn = role_map.get(role, role)
-    abs_html = f"<div style='background:#f8f9fa;border-radius:8px;padding:15px;margin-top:10px;font-size:14px;color:#555;line-height:1.8'>{abstract}</div>" if abstract else "<p style='color:#aaa;font-size:13px'>（未填写）</p>"
+    abs_html = (f"<div style='background:#f8f9fa;border-radius:8px;padding:15px;margin-top:10px;"
+                f"font-size:14px;color:#555;line-height:1.8'>{abstract}</div>"
+                if abstract else "<p style='color:#aaa;font-size:13px'>（未填写）</p>")
     return f"""<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <style>
@@ -91,7 +84,7 @@ body{{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f4f6f9;
 .val{{color:#333;font-size:14px;font-weight:500}}
 </style></head><body>
 <div class="card">
-<div class="hdr"><h1>📋 新增参会确认通知</h1></div>
+<div class="hdr"><h1>新增参会确认通知</h1></div>
 <div class="body">
 <div class="row"><span class="lbl">姓名</span><span class="val">{name} {title}</span></div>
 <div class="row"><span class="lbl">单位</span><span class="val">{institution}</span></div>
@@ -102,33 +95,36 @@ body{{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f4f6f9;
 </div></div></body></html>"""
 
 
-def send_email(to_email, subject, html_body, cc_email=None):
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f'超声脑机横琴论坛 <{SENDER_EMAIL}>'
-    msg['To'] = to_email
-    msg['Subject'] = Header(subject, 'utf-8')
-    if cc_email:
-        msg['Cc'] = cc_email
-    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-    recipients = [to_email] + ([cc_email] if cc_email else [])
-    for cfg in SMTP_CONFIGS:
-        try:
-            if cfg['ssl']:
-                ctx = ssl.create_default_context()
-                with smtplib.SMTP_SSL(cfg['host'], cfg['port'], context=ctx, timeout=10) as s:
-                    s.login(SENDER_EMAIL, SENDER_PASS)
-                    s.sendmail(SENDER_EMAIL, recipients, msg.as_string())
-            else:
-                with smtplib.SMTP(cfg['host'], cfg['port'], timeout=10) as s:
-                    s.ehlo(); s.starttls()
-                    s.login(SENDER_EMAIL, SENDER_PASS)
-                    s.sendmail(SENDER_EMAIL, recipients, msg.as_string())
-            logging.info(f"Email sent via {cfg['host']}")
+def send_email_resend(to_email, subject, html_body, cc_list=None):
+    """通过 Resend API 发送邮件"""
+    payload = {
+        'from': f'{SENDER_NAME} <{SENDER_EMAIL}>',
+        'to': [to_email],
+        'subject': subject,
+        'html': html_body,
+    }
+    if cc_list:
+        payload['cc'] = cc_list
+
+    try:
+        resp = requests.post(
+            'https://api.resend.com/emails',
+            headers={
+                'Authorization': f'Bearer {RESEND_API_KEY}',
+                'Content-Type': 'application/json',
+            },
+            json=payload,
+            timeout=15
+        )
+        if resp.status_code in (200, 201):
+            logging.info(f"Resend OK: {resp.json().get('id')} -> {to_email}")
             return True
-        except Exception as e:
-            logging.warning(f"SMTP {cfg['host']} failed: {e}")
-            continue
-    return False
+        else:
+            logging.warning(f"Resend failed {resp.status_code}: {resp.text}")
+            return False
+    except Exception as e:
+        logging.error(f"Resend exception: {e}")
+        return False
 
 
 def save_rsvp(data):
@@ -175,19 +171,23 @@ def rsvp():
         if not all([name, institution, email]):
             return jsonify({'success': False, 'error': '请填写必填项'}), 400
 
+        # 保存记录
         save_rsvp({'name': name, 'title': title, 'institution': institution,
                    'role': role, 'email': email, 'abstract': abstract})
 
+        # 发送确认邮件给参会者（抄送主办方）
         conf_html = build_confirmation_email(name, title, institution, role, email)
-        sent = send_email(
+        cc = [ORGANIZER_EMAIL] if email != ORGANIZER_EMAIL else []
+        sent = send_email_resend(
             to_email=email,
             subject='【超声脑机横琴论坛】参会确认 | RSVP Confirmation',
             html_body=conf_html,
-            cc_email=ORGANIZER_EMAIL if email != ORGANIZER_EMAIL else None
+            cc_list=cc
         )
 
+        # 发送通知邮件给主办方
         notify_html = build_notify_email(name, title, institution, role, email, abstract)
-        send_email(
+        send_email_resend(
             to_email=ORGANIZER_EMAIL,
             subject=f'【新报名】{name} {title} — {institution}',
             html_body=notify_html
