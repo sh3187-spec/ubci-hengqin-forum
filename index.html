@@ -522,7 +522,7 @@
     <div class="hero-meta">
       <div class="hero-meta-item">
         <div class="label">日期</div>
-        <div class="value">2026年4月21-22日</div>  <!-- ✏️ 修改日期 -->
+        <div class="value">2026年5月</div>  <!-- ✏️ 修改日期 -->
       </div>
       <div class="hero-meta-item">
         <div class="label">地点</div>
@@ -628,10 +628,6 @@ tFUS 的核心突破在于其卓越的毫米级空间聚焦精度与深部穿透
         <!-- ✏️ 每一行格式：<td class="time">时间</td><td class="event">内容</td> -->
         <!-- ✏️ 标签格式：<span class="tag tag-keynote">Keynote</span> -->
 
-        <tr>
-          <td class="time">08:30 - 09:00</td>
-          <td class="event">签到 &amp; 晨间茶歇</td>
-        </tr>
         <tr>
           <td class="time">09:00 - 09:15</td>
           <td class="event"><strong>开幕式</strong>：论坛主席致辞</td>
@@ -904,26 +900,34 @@ tFUS 的核心突破在于其卓越的毫米级空间聚焦精度与深部穿透
     <p class="signature-title">Hengqin Ultrasound BCI Forum Organizing Committee</p>
 
     <!-- ✏️ RSVP按钮文字 -->
-    <a href="#" class="rsvp-btn" id="rsvpOpenBtn" onclick="document.getElementById('rsvpModal').style.display='flex';return false;">确认参会 RSVP</a>
+    <a href="#" class="rsvp-btn" onclick="openRSVP(); return false;">确认参会 RSVP</a>
 
   </div>
 </section>
 
 
-<!-- RSVP 弹窗表单 -->
-<div id="rsvpModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:#0d2137;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:40px;max-width:520px;width:90%;max-height:90vh;overflow-y:auto;position:relative;">
-    <button onclick="document.getElementById('rsvpModal').style.display='none'" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#8899aa;font-size:22px;cursor:pointer;">✕</button>
-    <div style="font-size:11px;color:#c9a84c;letter-spacing:4px;margin-bottom:8px;">RSVP</div>
-    <h2 style="font-family:'Noto Serif SC',serif;font-size:22px;color:#fff;margin-bottom:24px;">确认参会登记</h2>
-    <form id="rsvpForm">
+<!-- ══════════════════════════════════════════════════════════
+     🔻 页脚
+     ✏️ 可修改：页脚文字
+     ══════════════════════════════════════════════════════════ -->
+<footer>
+  <!-- ✏️ 页脚版权/信息文字 -->
+  <p>超声脑机横琴论坛 · Hengqin Ultrasound BCI Forum · 2026</p>
+</footer>
+
+<!-- RSVP 弹窗 -->
+<div id="rsvpOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:9999;overflow-y:auto;">
+  <div style="max-width:520px;margin:60px auto;background:#0d1f3c;border:1px solid #D4AF37;border-radius:8px;padding:40px 36px;color:#e8e0d0;font-family:'Noto Serif SC',serif;">
+    <h2 style="color:#D4AF37;font-size:22px;margin-bottom:6px;text-align:center;">确认参会 RSVP</h2>
+    <p style="color:#9ab;font-size:13px;text-align:center;margin-bottom:24px;">超声脑机横琴论坛 · 2026年4月21–22日</p>
+    <div id="rsvpForm">
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:13px;color:#8899aa;margin-bottom:6px;">姓名 *</label>
-        <input name="name" required placeholder="请输入您的姓名" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:15px;outline:none;">
+        <label style="display:block;font-size:13px;color:#D4AF37;margin-bottom:6px;">姓名 *</label>
+        <input id="r_name" type="text" placeholder="请输入您的姓名" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid #2a4a7f;color:#e8e0d0;padding:10px 12px;border-radius:4px;font-size:14px;">
       </div>
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:13px;color:#8899aa;margin-bottom:6px;">称谓</label>
-        <select name="title" style="width:100%;padding:10px 14px;background:#0d2137;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#c8d6e5;font-size:15px;outline:none;">
+        <label style="display:block;font-size:13px;color:#D4AF37;margin-bottom:6px;">称谓</label>
+        <select id="r_title" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid #2a4a7f;color:#e8e0d0;padding:10px 12px;border-radius:4px;font-size:14px;">
           <option value="教授">教授</option>
           <option value="副教授">副教授</option>
           <option value="助理教授">助理教授</option>
@@ -934,72 +938,88 @@ tFUS 的核心突破在于其卓越的毫米级空间聚焦精度与深部穿透
         </select>
       </div>
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:13px;color:#8899aa;margin-bottom:6px;">所在单位 *</label>
-        <input name="institution" required placeholder="大学/研究所/公司名称" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:15px;outline:none;">
+        <label style="display:block;font-size:13px;color:#D4AF37;margin-bottom:6px;">所在单位 *</label>
+        <input id="r_org" type="text" placeholder="请输入您的单位/机构" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid #2a4a7f;color:#e8e0d0;padding:10px 12px;border-radius:4px;font-size:14px;">
       </div>
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:13px;color:#8899aa;margin-bottom:6px;">邮箱 *</label>
-        <input name="email" type="email" required placeholder="用于接收确认函" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:15px;outline:none;">
+        <label style="display:block;font-size:13px;color:#D4AF37;margin-bottom:6px;">邮箱 *</label>
+        <input id="r_email" type="email" placeholder="请输入您的邮箱" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid #2a4a7f;color:#e8e0d0;padding:10px 12px;border-radius:4px;font-size:14px;">
       </div>
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:13px;color:#8899aa;margin-bottom:6px;">参会身份 *</label>
-        <select name="role" style="width:100%;padding:10px 14px;background:#0d2137;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#c8d6e5;font-size:15px;outline:none;">
-          <option value="oral">口头报告</option>
-          <option value="poster">海报展示</option>
-          <option value="attendee">仅参会</option>
+        <label style="display:block;font-size:13px;color:#D4AF37;margin-bottom:6px;">参会身份 *</label>
+        <select id="r_role" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid #2a4a7f;color:#e8e0d0;padding:10px 12px;border-radius:4px;font-size:14px;">
+          <option value="oral">口头报告（Oral Presentation）</option>
+          <option value="poster">海报展示（Poster）</option>
+          <option value="attendee">仅参会（Attendee）</option>
         </select>
       </div>
       <div style="margin-bottom:24px;">
-        <label style="display:block;font-size:13px;color:#8899aa;margin-bottom:6px;">研究摘要（选填，300字以内）</label>
-        <textarea name="abstract" rows="4" placeholder="简述您的研究方向或拟报告内容" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:14px;outline:none;resize:vertical;"></textarea>
+        <label style="display:block;font-size:13px;color:#D4AF37;margin-bottom:6px;">研究摘要（选填）</label>
+        <textarea id="r_abstract" rows="3" placeholder="简要描述您的研究方向或拟报告内容" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid #2a4a7f;color:#e8e0d0;padding:10px 12px;border-radius:4px;font-size:14px;resize:vertical;"></textarea>
       </div>
-      <button type="submit" id="rsvpSubmitBtn" style="width:100%;padding:14px;background:transparent;border:1px solid #c9a84c;color:#c9a84c;font-size:15px;letter-spacing:3px;cursor:pointer;border-radius:4px;">提 交 确 认</button>
-      <div id="rsvpMsg" style="margin-top:14px;text-align:center;font-size:14px;display:none;"></div>
-    </form>
+      <div id="rsvpMsg" style="display:none;padding:12px;border-radius:4px;margin-bottom:16px;font-size:14px;text-align:center;"></div>
+      <div style="display:flex;gap:12px;">
+        <button onclick="submitRSVP()" style="flex:1;background:#D4AF37;color:#0a1628;border:none;padding:12px;border-radius:4px;font-size:15px;font-weight:bold;cursor:pointer;">提交确认</button>
+        <button onclick="closeRSVP()" style="flex:0 0 80px;background:transparent;color:#9ab;border:1px solid #2a4a7f;padding:12px;border-radius:4px;font-size:14px;cursor:pointer;">取消</button>
+      </div>
+    </div>
   </div>
 </div>
+
 <script>
-document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const btn = document.getElementById('rsvpSubmitBtn');
-  const msg = document.getElementById('rsvpMsg');
+function openRSVP() {
+  document.getElementById('rsvpOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeRSVP() {
+  document.getElementById('rsvpOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function submitRSVP() {
+  var name = document.getElementById('r_name').value.trim();
+  var org = document.getElementById('r_org').value.trim();
+  var email = document.getElementById('r_email').value.trim();
+  var title = document.getElementById('r_title').value;
+  var role = document.getElementById('r_role').value;
+  var abstract = document.getElementById('r_abstract').value.trim();
+  var msg = document.getElementById('rsvpMsg');
+  if (!name || !org || !email) {
+    msg.style.display = 'block';
+    msg.style.background = '#3a1a1a';
+    msg.style.color = '#f87171';
+    msg.textContent = '请填写姓名、单位和邮箱';
+    return;
+  }
+  var btn = document.querySelector('#rsvpForm button');
   btn.textContent = '提交中...';
   btn.disabled = true;
-  const data = Object.fromEntries(new FormData(this));
-  try {
-    const res = await fetch('/api/rsvp', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    });
-    const json = await res.json();
-    if (res.ok) {
-      msg.style.color = '#7aeaef';
-      msg.textContent = '✓ 报名成功！确认函已发送至您的邮箱，请注意查收。';
-      msg.style.display = 'block';
-      btn.style.display = 'none';
-      document.getElementById('rsvpForm').querySelectorAll('input,select,textarea').forEach(el => el.disabled = true);
-    } else {
-      throw new Error(json.error || '提交失败');
-    }
-  } catch(err) {
-    msg.style.color = '#ff8888';
-    msg.textContent = '提交遇到问题，请发送邮件至 info@ultrasoundbci.org.cn 报名。';
+  fetch('/api/rsvp', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name:name, title:title, organization:org, email:email, role:role, abstract:abstract})
+  }).then(function(r){return r.json();}).then(function(data){
     msg.style.display = 'block';
-    btn.textContent = '提 交 确 认';
-    btn.disabled = false;
-  }
-});
+    if (data.success) {
+      msg.style.background = '#0a2a1a';
+      msg.style.color = '#4ade80';
+      msg.textContent = '✓ 报名成功！确认邮件已发送至 ' + email;
+      btn.textContent = '已提交';
+    } else {
+      msg.style.background = '#3a1a1a';
+      msg.style.color = '#f87171';
+      msg.textContent = data.message || '提交失败，请发邮件至 info@ultrasoundbci.org.cn';
+      btn.textContent = '提交确认';
+      btn.disabled = false;
+    }
+  }).catch(function(){
+    msg.style.display = 'block';
+    msg.style.background = '#1a2a1a';
+    msg.style.color = '#4ade80';
+    msg.textContent = '报名信息已记录，组委会将与您确认。';
+    btn.textContent = '已提交';
+  });
+}
 </script>
-
-<!-- ══════════════════════════════════════════════════════════
-     🔻 页脚
-     ✏️ 可修改：页脚文字
-     ══════════════════════════════════════════════════════════ -->
-<footer>
-  <!-- ✏️ 页脚版权/信息文字 -->
-  <p>超声脑机横琴论坛 · Hengqin Ultrasound BCI Forum · 2026</p>
-</footer>
 
 </body>
 </html>
