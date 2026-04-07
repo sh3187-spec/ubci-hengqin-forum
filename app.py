@@ -163,7 +163,7 @@ def rsvp():
         data = request.get_json(force=True)
         name        = data.get('name', '').strip()
         title       = data.get('title', '').strip()
-        institution = data.get('institution', '').strip()
+        institution = (data.get('institution') or data.get('organization') or '').strip()
         role        = data.get('role', '').strip()
         email       = data.get('email', '').strip()
         abstract    = data.get('abstract', '').strip()
