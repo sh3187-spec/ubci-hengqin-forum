@@ -54,7 +54,7 @@ body{{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f4f6f9;
 <div class="row"><span class="lbl">参会者</span><span class="val">{name} {title}</span></div>
 <div class="row"><span class="lbl">单位</span><span class="val">{institution}</span></div>
 <div class="row"><span class="lbl">参会身份</span><span class="val">{role_cn}</span></div>
-<div class="row"><span class="lbl">日期</span><span class="val">2026年4月21–22日（全程参会）</span></div>
+<div class="row"><span class="lbl">日期</span><span class="val">2026年6月9–10日（全程参会）</span></div>
 <div class="row"><span class="lbl">地点</span><span class="val">横琴粤澳深度合作区 · 英迪格酒店</span></div>
 </div>
 <p class="text">组委会将于会前两周向您发送详细日程、差旅资助申请表及住宿信息。如有问题请联系：<br><strong>📧 info@ultrasoundbci.org.cn</strong></p>
