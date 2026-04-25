@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>参与人名单 · 超声脑机横琴论坛</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #050e1f;
+      --bg-card:    #0a1628;
+      --bg-card2:   #0d1e35;
+      --gold:       #D4AF37;
+      --gold-light: #e8d48b;
+      --text-main:  #e8e0d0;
+      --text-muted: #7a9ab5;
+      --border:     rgba(212,175,55,0.25);
+    }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Noto Sans SC', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── 顶部导航 ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5,14,31,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 15px;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--gold); }
+
+    /* ── 页头 Hero ── */
+    .hero {
+      text-align: center;
+      padding: 72px 20px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(14,77,100,0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .hero-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .gold-line {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 24px auto 0;
+    }
+
+    /* ── 统计数字 ── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      padding: 32px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+
+    /* ── 搜索/筛选栏 ── */
+    .filter-bar {
+      max-width: 900px;
+      margin: 36px auto 0;
+      padding: 0 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 16px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box::placeholder { color: var(--text-muted); }
+    .search-box:focus { border-color: var(--gold); }
+    .count-badge {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .count-badge span { color: var(--gold); font-weight: 600; }
+
+    /* ── 名单网格 ── */
+    .grid {
+      max-width: 900px;
+      margin: 28px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── 人物卡片 ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 20px 22px;
+      text-align: center;
+      transition: border-color 0.25s, transform 0.25s;
+      cursor: default;
+    }
+    .card:hover {
+      border-color: rgba(212,175,55,0.6);
+      transform: translateY(-3px);
+    }
+
+    /* 头像容器 */
+    .avatar-wrap {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    .avatar-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), transparent 60%);
+      z-index: 0;
+    }
+    .avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      position: relative;
+      z-index: 1;
+      background: var(--bg-card2);
+      display: block;
+    }
+    /* 无头像时的占位符 */
+    .avatar-placeholder {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0e4d64, #0a1628);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 28px;
+      color: var(--gold);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-name {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .card-title-badge {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--gold);
+      border: 1px solid rgba(212,175,55,0.4);
+      border-radius: 3px;
+      padding: 2px 8px;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .card-org {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── 页脚 ── */
+    footer {
+      text-align: center;
+      padding: 32px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    /* ── 无结果提示 ── */
+    .no-result {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 600px) {
+      .nav { padding: 12px 20px; }
+      .stats { gap: 28px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav class="nav">
+  <a href="/" class="nav-brand">超声脑机横琴论坛</a>
+  <a href="/" class="nav-back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    返回主页
+  </a>
+</nav>
+
+<!-- 页头 -->
+<section class="hero">
+  <div class="hero-label">Confirmed Participants</div>
+  <h1 class="hero-title">参与人名单</h1>
+  <p class="hero-sub">超声脑机横琴论坛 · 2026年6月9–10日 · 横琴粤澳深度合作区</p>
+  <div class="gold-line"></div>
+</section>
+
+<!-- 统计 -->
+<div class="stats">
+  <div class="stat-item">
+    <div class="stat-num" id="totalCount">0</div>
+    <div class="stat-label">确认参会</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="institutionCount">0</div>
+    <div class="stat-label">参与机构</div>
+  </div>
+</div>
+
+<!-- 搜索栏 -->
+<div class="filter-bar">
+  <input class="search-box" type="text" id="searchInput" placeholder="搜索姓名或单位…" oninput="filterCards()">
+  <span class="count-badge">共 <span id="visibleCount">0</span> 位参会者</span>
+</div>
+
+<!-- 名单网格 -->
+<div class="grid" id="attendeeGrid">
+
+  <!-- ============================================================
+       ✏️  编辑说明：
+       复制下方一个 .card 块即可添加新参会者。
+       - data-name / data-org：用于搜索过滤（请与显示内容一致）
+       - avatar-placeholder 中的文字：姓名首字（无头像时显示）
+       - 如有头像，将 <div class="avatar-placeholder"> 替换为：
+         <img class="avatar" src="/photos/姓名.jpg" alt="姓名">
+       ============================================================ -->
+
+  <!-- 示例卡片 1 -->
+  <div class="card" data-name="张三" data-org="北京大学">
+    <div class="avatar-wrap">
+      <!-- 有头像时替换为: <img class="avatar" src="/photos/zhangsan.jpg" alt="张三"> -->
+      <div class="avatar-placeholder">张</div>
+    </div>
+    <div class="card-name">张三</div>
+    <div class="card-title-badge">教授</div>
+    <div class="card-org">北京大学<br>生命科学学院</div>
+  </div>
+
+  <!-- 示例卡片 2 -->
+  <div class="card" data-name="李四" data-org="上海交通大学">
+    <div class="avatar-wrap">
+      <div class="avatar-placeholder">李</div>
+    </div>
+    <div class="card-name">李四</div>
+    <div class="card-title-badge">副教授</div>
+    <div class="card-org">上海交通大学<br>生物医学工程学院</div>
+  </div>
+
+  <!-- 示例卡片 3 -->
+  <div class="card" data-name="王五" data-org="香港理工大学">
+    <div class="avatar-wrap">
+      <div class="avatar-placeholder">王</div>
+    </div>
+    <div class="card-name">王五</div>
+    <div class="card-title-badge">助理教授</div>
+    <div class="card-org">香港理工大学<br>应用生物与化学科技系</div>
+  </div>
+
+  <!-- 示例卡片 4 -->
+  <div class="card" data-name="赵六" data-org="中国科学院">
+    <div class="avatar-wrap">
+      <div class="avatar-placeholder">赵</div>
+    </div>
+    <div class="card-name">赵六</div>
+    <div class="card-title-badge">研究员</div>
+    <div class="card-org">中国科学院<br>神经科学研究所</div>
+  </div>
+
+  <!-- 示例卡片 5 -->
+  <div class="card" data-name="陈七" data-org="浙江大学">
+    <div class="avatar-wrap">
+      <div class="avatar-placeholder">陈</div>
+    </div>
+    <div class="card-name">陈七</div>
+    <div class="card-title-badge">教授</div>
+    <div class="card-org">浙江大学<br>脑科学与脑医学学院</div>
+  </div>
+
+  <!-- 示例卡片 6 -->
+  <div class="card" data-name="刘八" data-org="清华大学">
+    <div class="avatar-wrap">
+      <div class="avatar-placeholder">刘</div>
+    </div>
+    <div class="card-name">刘八</div>
+    <div class="card-title-badge">博士后</div>
+    <div class="card-org">清华大学<br>医学院</div>
+  </div>
+
+  <!-- 无搜索结果提示 -->
+  <div class="no-result" id="noResult">未找到匹配的参会者</div>
+
+</div>
+
+<!-- 页脚 -->
+<footer>
+  <p>超声脑机横琴论坛 · Hengqin Ultrasound BCI Forum · 2026</p>
+  <p style="margin-top:6px">info@ultrasoundbci.org.cn</p>
+</footer>
+
+<script>
+  // 统计卡片数量和机构数量
+  function updateStats() {
+    const cards = document.querySelectorAll('.card:not(#noResult)');
+    const orgs = new Set();
+    cards.forEach(c => { if (c.dataset.org) orgs.add(c.dataset.org); });
+    document.getElementById('totalCount').textContent = cards.length;
+    document.getElementById('institutionCount').textContent = orgs.size;
+    document.getElementById('visibleCount').textContent = cards.length;
+  }
+
+  // 搜索过滤
+  function filterCards() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const cards = document.querySelectorAll('.card:not(#noResult)');
+    let visible = 0;
+    cards.forEach(c => {
+      const match = !q ||
+        (c.dataset.name || '').toLowerCase().includes(q) ||
+        (c.dataset.org  || '').toLowerCase().includes(q);
+      c.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    document.getElementById('visibleCount').textContent = visible;
+    document.getElementById('noResult').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  updateStats();
+</script>
+</body>
+</html>

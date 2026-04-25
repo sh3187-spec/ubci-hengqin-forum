@@ -151,6 +151,16 @@ def hero_bg():
     return send_from_directory('.', 'hero_bg.jpg')
 
 
+@app.route('/attendees')
+def attendees():
+    return send_from_directory('.', 'attendees.html')
+
+
+@app.route('/photos/<path:filename>')
+def photos(filename):
+    return send_from_directory('photos', filename)
+
+
 @app.route('/api/rsvp', methods=['POST', 'OPTIONS'])
 def rsvp():
     if request.method == 'OPTIONS':
